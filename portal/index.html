@@ -293,7 +293,7 @@
       const { error } = await supabase.auth.updateUser({ password });
       if (error) return showNotice(error.message, 'error');
       history.replaceState(null, '', window.location.pathname);
-      window.location.href = 'workspace.html';
+      window.location.href = 'dashboard.html';
     });
 
     loginForm.addEventListener('submit', async (event) => {
@@ -319,7 +319,7 @@
       submitButton.disabled = false;
       submitButton.innerHTML = 'Sign in <span>→</span>';
       if (signInError) return showNotice('Sign-in failed. Check your details, or use Forgot password with your account email address.', 'error');
-      window.location.href = 'workspace.html';
+      window.location.href = 'dashboard.html';
     });
 
     $('profile-form').addEventListener('submit', async (event) => {
@@ -414,7 +414,7 @@
     if (session && !passwordForm.hidden) {
       // Keep password setup visible when arriving through an invitation or recovery link.
     } else if (session) {
-      window.location.href = 'workspace.html';
+      window.location.href = 'dashboard.html';
     }
   </script>
 </body>
