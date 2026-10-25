@@ -14,11 +14,11 @@
 </head>
 <body>
 <header class="header">
-<a class="brand" href="../index.html"><img src="../assets/tuckers-truckers-logo.svg" alt="Tucker's Truckers logo"><span>TUCKER'S TRUCKERS<small>OPERATIONS PORTAL</small></span></a>
-<div class="header-actions"><span id="role-pill" class="role-pill">Loading role…</span><a class="button" href="../index.html">Main website</a><button class="button" id="signout">Sign out</button></div>
+<a class="brand" href="dashboard.html" aria-label="Tucker's Truckers dashboard home"><img src="../assets/tuckers-truckers-logo.svg" alt="Tucker's Truckers logo"><span>TUCKER'S TRUCKERS<small>OPERATIONS PORTAL</small></span></a>
+<div class="header-actions"><span id="account-name" class="role-pill">Loading account…</span><a class="button" href="../index.html">Main website</a><button class="button" id="signout">Sign out</button></div>
 </header>
 <main class="shell">
-<section class="hero"><div><p class="eyebrow" id="role-eyebrow">PRIVATE DASHBOARD</p><h1 id="welcome">Welcome to your dashboard</h1><p id="hero-copy">Loading your authorized workspace…</p></div><a id="primary-action" class="button primary" href="workspace.html" hidden>Open workspace →</a></section>
+<section class="hero"><div><p class="eyebrow" id="role-eyebrow">PRIVATE DASHBOARD</p><h1 id="welcome">Loading account…</h1><p id="hero-copy">Loading your authorized workspace…</p></div><a id="primary-action" class="button primary" href="workspace.html" hidden>Open workspace →</a></section>
 <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
 <nav id="tabs" class="tabs" aria-label="Dashboard sections" hidden></nav>
 <section id="overview-panel">
@@ -43,7 +43,9 @@ const $=id=>document.getElementById(id);
 let user=null, role='unassigned', carriers=[];
 $('year').textContent=new Date().getFullYear();
 function notice(message,type=''){const n=$('notice');n.textContent=message;n.className='notice '+type;n.hidden=false}
-function roleTitle(r){return ({platform_owner:'Platform Owner',dispatcher_admin:'Dispatcher Admin',dispatcher:'Dispatcher',carrier_admin:'Carrier Owner / Manager',carrier:'Carrier Owner / Manager',driver:'Driver'})[r]||'Unassigned'}
+function roleTitle(r){return ({platform_owner:'CEO',dispatcher_admin:'Dispatcher',dispatcher:'Dispatcher',carrier_admin:'Owner',carrier:'Owner',driver:'Driver'})[r]||'Unassigned'}
+function metadataName(metadata){const full=[metadata.first_name||metadata.given_name,metadata.last_name||metadata.family_name].filter(Boolean).join(' ').trim();return full||metadata.full_name||metadata.name||''}
+async function displayNameForRole(r){const metadata=user.user_metadata||{};let name=metadataName(metadata);if(r==='platform_owner')return name||'Tucker George';if(r==='carrier'||r==='carrier_admin'){const {data}=await supabase.from('carrier_profiles').select('contact_name').eq('user_id',user.id).maybeSingle();return data?.contact_name?.trim()||name||user.email||'Account'}if(r==='driver'){const {data}=await supabase.from('driver_profiles').select('full_name').eq('user_id',user.id).maybeSingle();return data?.full_name?.trim()||name||user.email||'Account'}return name||user.email||'Account'}
 function setMetric(label,value,detail=''){const el=document.createElement('article');el.className='card';const name=document.createElement('p');name.textContent=label;const val=document.createElement('div');val.className='metric';val.textContent=value;const note=document.createElement('div');note.className='metric-label';note.textContent=detail;el.append(name,val,note);$('metrics').append(el)}
 function feature(title,copy,icon,action,label='Open'){const el=document.createElement('article');el.className='card feature-card';const i=document.createElement('div');i.className='feature-icon';i.textContent=icon;const h=document.createElement('h3');h.textContent=title;const p=document.createElement('p');p.textContent=copy;el.append(i,h,p);if(action){if(action.startsWith('#')){const b=document.createElement('button');b.type='button';b.className='button';b.textContent=label+' →';b.addEventListener('click',()=>activateTab(action.slice(1).replace('-panel','')));el.append(b)}else{const a=document.createElement('a');a.className='button';a.href=action;a.textContent=label+' →';el.append(a)}}$('quick-links').append(el)}
 function tabSetup(items){const tabs=$('tabs');tabs.replaceChildren();for(const [id,label] of items){const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.panel=id;b.addEventListener('click',()=>activateTab(id));tabs.append(b)}tabs.hidden=false;activateTab('overview')}
@@ -57,7 +59,7 @@ async function init(){
  const {data:admin,error:adminError}=await supabase.rpc('is_portal_admin');
  if(!adminError&&admin===true)role='platform_owner';
  else {const {data:roleRow,error:roleError}=await supabase.from('portal_user_roles').select('role').eq('user_id',user.id).maybeSingle();if(roleError){notice('Could not read your portal role. Check the progressive onboarding SQL and role-table policies. '+roleError.message,'error')}role=roleRow?.role||'unassigned'}
- $('role-pill').textContent=roleTitle(role);$('role-eyebrow').textContent=roleTitle(role).toUpperCase();$('welcome').textContent=role==='platform_owner'?'Your operations command center':role.includes('dispatcher')?'Your dispatch command center':role==='driver'?'Your driver dashboard':role==='carrier'||role==='carrier_admin'?'Your company dashboard':'Portal access needs setup';
+ const accountName=await displayNameForRole(role);$('account-name').textContent=accountName;$('account-name').title=accountName;$('role-eyebrow').textContent='PRIVATE DASHBOARD';$('welcome').textContent=accountName+' - '+roleTitle(role);
  $('hero-copy').textContent=role.includes('dispatcher')?'Manage your assigned carrier companies from one workspace. Carrier records remain isolated from companies you are not assigned to.':role==='platform_owner'?'Manage platform accounts and review portal operations.':role==='driver'?'See your own driver information and authorized company details.':role==='carrier'||role==='carrier_admin'?'Manage your company information and view drivers associated with your company.':'Your account does not currently have an assigned portal role.';
  $('primary-action').hidden=!(role==='carrier'||role==='carrier_admin'||role==='driver');$('primary-action').href='workspace.html';
  if(role==='unassigned'){tabSetup([['overview','Dashboard'],['access','Access']]);$('overview-panel').hidden=true;activateTab('access');return}
