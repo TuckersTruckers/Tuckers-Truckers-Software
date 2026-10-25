@@ -38,3 +38,6 @@
   .navinner>.brand .brandmark{width:112px;height:112px}
   .navinner>.menu{right:0}
 }
+
+/* Public navigation: clearly distinguish the secure carrier portal entry point. */
+.links .portal-nav-button{padding:10px 13px;background:#97343a;border-color:#97343a;color:#fff;font-size:12px;white-space:nowrap}.links .portal-nav-button:hover{background:#70262b;border-color:#70262b}
