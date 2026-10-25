@@ -4,6 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>Workspace | Tucker's Truckers</title><link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
 <style>
+.account-control{position:relative}.account-tooltip{position:absolute;top:calc(100% + 8px);right:0;z-index:20;max-width:min(320px,calc(100vw - 32px));padding:9px 12px;border:1px solid #d8d8d8;border-radius:9px;background:#202020;color:#fff;box-shadow:0 6px 18px #0002;font-size:13px;overflow-wrap:anywhere;white-space:normal}
 :root{--ink:#191919;--muted:#686868;--red:#97343a;--red-dark:#70262b;--paper:#fff;--bg:#f5f5f5;--line:#e5e5e5;--green:#28734b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
 header{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:14px max(20px,calc((100% - 1180px)/2));background:#fff;border-bottom:1px solid var(--line)}
@@ -15,7 +16,7 @@ button,input,select{font:inherit}button{cursor:pointer}.wrap{width:min(1180px,ca
 </style>
 </head>
 <body>
-<header><a class="brand" href="../index.html"><img src="../assets/tuckers-truckers-logo.svg" alt=""><span>TUCKER'S TRUCKERS<small>CARRIER MANAGEMENT &amp; DISPATCH</small></span></a><button class="button secondary small" id="signout">Sign out</button></header>
+<header><a class="brand" href="../index.html"><img src="../assets/tuckers-truckers-logo.svg" alt=""><span>TUCKER'S TRUCKERS<small>CARRIER MANAGEMENT &amp; DISPATCH</small></span></a><div class="account-control"><button class="button secondary small" id="signout" aria-describedby="account-tooltip">Sign out</button><div class="account-tooltip" id="account-tooltip" role="status" hidden></div></div></header>
 <main class="wrap">
 <section class="hero"><div><p class="eyebrow" id="role-eyebrow">PRIVATE WORKSPACE</p><h1 id="welcome">Welcome to Your Workspace</h1><p id="hero-copy">Start with the essentials. You can finish the rest of your setup over time.</p></div><div class="hero-actions"><button class="button primary" id="finish-setup">Finish setup ↓</button></div></section>
 <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
@@ -76,6 +77,13 @@ const $=id=>document.getElementById(id);let user=null,role='carrier';
 $('year').textContent=new Date().getFullYear();
 function notice(msg,type=''){const n=$('notice');n.textContent=msg;n.className='notice '+type;n.hidden=false}
 function roleTitle(r){return ({platform_owner:'Platform Owner',dispatcher_admin:'Dispatcher Admin',dispatcher:'Dispatcher',carrier_admin:'Carrier Admin',carrier:'Carrier',driver:'Driver'})[r]||'Member'}
+let accountHoverTimer=null;
+function showAccountEmailLater(){clearTimeout(accountHoverTimer);$('account-tooltip').hidden=true;accountHoverTimer=setTimeout(()=>{const email=user?.email?.trim();$('account-tooltip').textContent=email?'Signed in as: '+email:'Email unavailable for this sign-in';$('account-tooltip').hidden=false},2000)}
+function hideAccountEmail(){clearTimeout(accountHoverTimer);$('account-tooltip').hidden=true}
+$('signout').addEventListener('mouseenter',showAccountEmailLater);
+$('signout').addEventListener('mouseleave',hideAccountEmail);
+$('signout').addEventListener('focus',showAccountEmailLater);
+$('signout').addEventListener('blur',hideAccountEmail);
 async function init(){
  const {data:{session}}=await supabase.auth.getSession();if(!session){location.href='index.html';return}
  const {data:{user:u}}=await supabase.auth.getUser();if(!u){location.href='index.html';return}user=u;
