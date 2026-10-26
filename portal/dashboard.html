@@ -16,6 +16,62 @@
 .feature-card{display:flex;flex-direction:column;align-items:flex-start;gap:9px}.feature-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:#f4e7e8;color:var(--red);font-size:18px}.feature-card h3{font-size:16px;margin:0}.feature-card p{flex:1;margin:0 0 8px}.subtle{font-size:12px;color:var(--muted)}.tag{display:inline-flex;background:#f2f2f2;border-radius:6px;padding:3px 7px;font-size:11px;color:#555;font-weight:750}.footer{text-align:center;color:var(--muted);font-size:11px;padding:20px;border-top:1px solid var(--line);background:#fff}
 @media(max-width:1100px){#metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.overview-columns{grid-template-columns:minmax(0,1fr)}.overview-stack{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
 @media(max-width:900px){.app-layout{grid-template-columns:190px minmax(0,1fr);gap:14px;padding:0 14px}.sidebar{padding:14px 9px}.grid,.feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{align-items:flex-start;flex-direction:column}.carrier-row{align-items:flex-start;flex-direction:column}.carrier-actions{justify-content:flex-start}}@media(max-width:680px){#metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric-card{padding:14px;min-height:120px}.metric-card .metric{font-size:26px}.overview-heading{align-items:flex-start;flex-direction:column}.overview-stack{grid-template-columns:minmax(0,1fr)}.quick-access .feature-grid{grid-template-columns:1fr}.hero{min-height:175px}.app-layout{grid-template-columns:minmax(0,1fr);gap:12px;margin:14px auto 30px;padding:0 10px}.sidebar{position:static;padding:12px;border-radius:12px}.sidebar-label{padding:0 4px}.tabs{flex-direction:row;overflow-x:auto;padding:10px 0 0;margin:0}.tabs button{width:auto;white-space:nowrap;padding:9px 10px}.tabs button::before{display:none}.sidebar-note{display:none}.shell{width:100%;margin:0}.hero,.card{padding:17px}.grid,.feature-grid{grid-template-columns:1fr}.section-title{flex-direction:column}.header-actions .button{padding:8px 10px;font-size:12px}.header{padding:11px 14px}.brand img{width:48px;height:42px}.brand small{font-size:7px}.role-pill{display:none}}
+
+/* Full dashboard shell redesign: fixed brand sidebar + spacious workspace */
+.header{margin-left:258px;padding:14px 30px;background:#fff;position:sticky;top:0;z-index:20;min-height:76px}
+.header .brand{display:none}
+.header-actions{margin-left:auto}
+.app-layout{display:block;max-width:none;margin:0 0 0 258px;padding:28px 30px 46px;min-height:calc(100vh - 76px)}
+.sidebar{position:fixed;z-index:30;left:0;top:0;bottom:0;width:258px;overflow-y:auto;background:var(--charcoal);color:#fff;border:0;border-radius:0;padding:23px 15px 20px;box-shadow:5px 0 24px rgba(0,0,0,.08)}
+.sidebar-brand{display:flex;align-items:center;gap:11px;padding:2px 8px 24px;margin-bottom:25px;border-bottom:1px solid rgba(255,255,255,.13);text-decoration:none;color:#fff;font-size:12px;line-height:1.3;font-weight:900;letter-spacing:.045em}
+.sidebar-brand img{width:57px;height:54px;object-fit:contain;flex:0 0 auto;background:#fff;border-radius:8px;padding:3px}
+.sidebar-brand small{display:block;margin-top:5px;color:#c8c8c8;font-size:9px;font-weight:700;letter-spacing:.15em}
+.sidebar-label{padding:0 10px;color:#aaa;font-size:10px;font-weight:850;letter-spacing:.15em;text-transform:uppercase}
+.tabs{display:flex;flex-direction:column;gap:5px;overflow:visible;padding:12px 0 0;margin:0;border:0}
+.tabs button{width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:1px solid transparent;background:transparent;padding:12px 11px;border-radius:8px;font-size:13px;font-weight:750;color:#dedede;min-height:44px}
+.tabs button::before{content:'›';display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.09);color:#d5d5d5;font-size:17px;line-height:1}
+.tabs button:hover{background:rgba(255,255,255,.08);color:#fff}
+.tabs button.active{background:var(--red);color:#fff;border-color:var(--red);box-shadow:none}
+.tabs button.active::before{background:rgba(0,0,0,.18);color:#fff}
+.sidebar-note{margin:26px 2px 0;padding:14px 12px;border-radius:8px;background:rgba(255,255,255,.07);border-left:3px solid var(--red);font-size:11px;color:#d5d5d5}
+.sidebar-note strong{display:block;color:#fff;font-size:12px;margin-bottom:4px}
+.shell{width:100%;max-width:1500px;min-width:0;margin:0 auto}
+.hero{border-radius:12px;padding:34px 36px;min-height:205px;box-shadow:0 10px 28px rgba(0,0,0,.08)}
+.overview-heading{margin-top:30px}
+#metrics{gap:16px}
+.metric-card{min-height:145px;padding:20px 21px 18px;border-radius:11px}
+.overview-columns{gap:18px;margin-top:20px}
+.overview-panel{border-radius:11px}
+.panel-head{padding:20px 22px 15px}
+.panel-body{padding:18px 22px}
+.quick-access{margin-top:24px}
+.quick-access .feature-grid{gap:16px}
+.quick-access .feature-card{min-height:178px}
+.footer{margin-left:258px}
+@media(max-width:900px){
+ .header{margin-left:220px;padding:12px 18px}
+ .app-layout{margin-left:220px;padding:20px 18px 35px}
+ .sidebar{width:220px}
+ .sidebar-brand{gap:8px;padding-left:3px;padding-right:3px}
+ .sidebar-brand img{width:45px;height:45px}
+ .footer{margin-left:220px}
+}
+@media(max-width:680px){
+ .header{margin-left:0;padding:10px 13px;min-height:62px;position:relative}
+ .app-layout{display:flex;flex-direction:column;margin:0;padding:12px 10px 28px;gap:14px}
+ .sidebar{position:static;width:100%;height:auto;overflow:visible;padding:12px;border-radius:10px}
+ .sidebar-brand{padding:0 4px 12px;margin-bottom:12px}
+ .sidebar-brand img{width:40px;height:40px}
+ .sidebar-label{padding:0 4px}
+ .tabs{flex-direction:row;overflow-x:auto;padding:8px 0 0;margin:0}
+ .tabs button{width:auto;white-space:nowrap;padding:9px 10px;min-height:38px}
+ .tabs button::before{display:none}
+ .sidebar-note{display:none}
+ .shell{width:100%;margin:0}
+ .hero{padding:20px;min-height:0}
+ .footer{margin-left:0}
+}
+
 </style>
 </head>
 <body>
@@ -24,7 +80,7 @@
 <div class="header-actions"><span id="account-name" class="role-pill">Loading account…</span><a class="button" href="../index.html">Main website</a><button class="button" id="signout">Sign out</button></div>
 </header>
 <div class="app-layout">
-<aside class="sidebar" aria-label="Portal navigation"><div class="sidebar-label">Workspace</div><nav id="tabs" class="tabs" aria-label="Dashboard sections" hidden></nav><div class="sidebar-note"><strong>Your business. Your data.</strong>Company information and driver records are shown according to your portal permissions.</div></aside>
+<aside class="sidebar" aria-label="Portal navigation"><a class="sidebar-brand" href="dashboard.html" aria-label="Tucker's Truckers dashboard home"><img src="../assets/tuckers-truckers-logo.svg" alt="Tucker's Truckers logo"><span>TUCKER'S TRUCKERS<small>OPERATIONS PORTAL</small></span></a><div class="sidebar-label">WORKSPACE</div><nav id="tabs" class="tabs" aria-label="Dashboard sections" hidden></nav><div class="sidebar-note"><strong>Your business. Your data.</strong>Company information and driver records are shown according to your portal permissions.</div></aside>
 <main class="shell">
 <section class="hero"><div><p class="eyebrow" id="role-eyebrow">PRIVATE DASHBOARD</p><h1 id="welcome">Loading account…</h1><p id="hero-copy">Loading your authorized workspace…</p></div><a id="primary-action" class="button primary" href="workspace.html" hidden>Open workspace →</a></section>
 <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
