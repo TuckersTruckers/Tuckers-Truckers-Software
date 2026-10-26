@@ -36,7 +36,13 @@
 .sidebar-note{margin:26px 2px 0;padding:14px 12px;border-radius:8px;background:rgba(255,255,255,.07);border-left:3px solid var(--red);font-size:11px;color:#d5d5d5}
 .sidebar-note strong{display:block;color:#fff;font-size:12px;margin-bottom:4px}
 .shell{width:100%;max-width:1500px;min-width:0;margin:0 auto}
-.hero{border-radius:12px;padding:34px 36px;min-height:205px;box-shadow:0 10px 28px rgba(0,0,0,.08)}
+.hero{border-radius:12px;padding:34px 36px;min-height:205px;box-shadow:0 10px 28px rgba(0,0,0,.08);isolation:isolate;background:#17191b;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;z-index:-2;inset:0 0 0 34%;background-image:url("https://images.pexels.com/photos/11087837/pexels-photo-11087837.jpeg?auto=compress&cs=tinysrgb&w=1400");background-size:cover;background-position:center 56%;filter:brightness(.68) saturate(.82)}
+.hero:after{content:"";position:absolute;z-index:-1;inset:0;width:100%;height:100%;border:0;border-radius:0;right:auto;top:auto;box-shadow:none;background:linear-gradient(90deg,#17191b 0%,#17191b 31%,rgba(23,25,27,.98) 39%,rgba(23,25,27,.87) 48%,rgba(23,25,27,.53) 57%,rgba(23,25,27,.1) 70%,rgba(23,25,27,.02) 100%);clip-path:none}
+.hero:before{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.hero>div,.hero>a{position:relative;z-index:1}
+.hero .eyebrow{color:#d85a62}
+.hero .button.primary{background:#97343a;border-color:#97343a}
 .overview-heading{margin-top:30px}
 #metrics{gap:16px}
 .metric-card{min-height:145px;padding:20px 21px 18px;border-radius:11px}
