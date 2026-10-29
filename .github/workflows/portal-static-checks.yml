@@ -6,13 +6,13 @@ on:
     paths:
       - "portal/**"
       - "supabase/functions/admin-provision-account/**"
-      - ".github/workflows/portal-static-checks.yml"
+      - ".github/workflows/**"
   pull_request:
     branches: [main]
     paths:
       - "portal/**"
       - "supabase/functions/admin-provision-account/**"
-      - ".github/workflows/portal-static-checks.yml"
+      - ".github/workflows/**"
 
 permissions:
   contents: read
