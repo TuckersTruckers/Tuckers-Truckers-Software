@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     }).eq("user_id", targetUserId);
     return json({
       success: true,
-      email_sent: true,
+      email_requested: true,
       tracking_warning: stampError ? "The email request was submitted, but the sent timestamp could not be saved: " + stampError.message : null,
       account: { user_id: targetUserId, email: target.user.email, username: null, role: "carrier_admin" },
       message: "Password setup email requested for " + (profile.business_name || "carrier") + ". The link is delivered by Supabase Auth and is not exposed in the administrator page.",
