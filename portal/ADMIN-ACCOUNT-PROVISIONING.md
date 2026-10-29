@@ -40,7 +40,7 @@ This feature is committed to the repository, but it is **not ready for live use 
 ## Important limitations
 
 - Recovery links are sensitive one-time credentials. Do not copy them into notes, commits, logs, or the maintenance checklist. Carrier email delivery uses Supabase Auth; the existing driver flow still returns a setup link that must be shared privately.
-- Carrier creation and setup-link generation are separate actions. The Send setup email action requests delivery through Supabase Auth. The send timestamp and send count are tracked by `setup_link_sent_at` and `setup_link_send_count` after the migration is deployed. An email request returning successfully means Supabase Auth accepted the request, not that delivery to the inbox is guaranteed. A previous send can be resent; use only the newest email link.
+- Carrier creation and setup-email delivery are separate actions. The Send setup email action requests delivery through Supabase Auth. The send timestamp and send count are tracked by `setup_link_sent_at` and `setup_link_send_count` after the migration is deployed. An email request returning successfully means Supabase Auth accepted the request, not that delivery to the inbox is guaranteed. A previous send can be resent; use only the newest email link.
 - The current admin-assisted form captures profile data, not file uploads or legally binding agreement signatures. Document completion and agreement execution remain separate steps.
 - Frontend role checks are not a security boundary. Supabase RLS/storage policies and tenant-isolation tests are required before storing real carrier documents.
 - Identifier login must not be advertised until the migration and Edge Function are deployed and all identifier paths have been tested.
