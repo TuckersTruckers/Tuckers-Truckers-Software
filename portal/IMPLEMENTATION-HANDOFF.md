@@ -39,15 +39,22 @@ The previous PR generated a recovery link with `admin.auth.admin.generateLink()`
 - Keep driver setup-link behavior unchanged.
 - Do not log or display recovery tokens.
 
+## Validation performed in this implementation pass
+- Confirmed the migration column list is syntactically joined in one `ALTER TABLE` statement and the new send-tracking columns are included.
+- Confirmed the Edge Function uses a separate implicit-flow Auth client for the recovery email request, returns an email-request status rather than a token-bearing link, and tracks send timestamp/count.
+- Confirmed the admin UI uses the new request status and keeps driver setup-link behavior in place.
+- These were source-level consistency checks only; no compiler, browser, email delivery, or live database test has been run.
+
 ## Required next steps before live use
-1. Review the PR diff and run syntax/static checks on the updated Edge Function and portal JS.
+1. Run TypeScript/browser-JavaScript syntax checks and inspect the full PR diff.
 2. Apply `portal/admin-provisioning-migration.sql` only after confirming the target schema and migration are correct.
-3. Deploy `admin-provision-account` from this branch only after the migration is applied and function code reviewed. Do not deploy `identifier-sign-in` as part of this email-only change unless separately required and tested.
-4. Use a dedicated test carrier with an email inbox under your control. Verify: no email at account creation; Send setup email delivers; recipient can open it on another browser/device; password can be set; sign-in works; resend is tracked; expired/old links fail safely.
-5. Confirm carrier cannot access other carrier records or restricted features before approval. Frontend visibility is not a security boundary.
-6. Test duplicate email, username, phone, and MC handling and confirm failed provisioning leaves no orphan Auth/profile/role records.
-7. Confirm driver invitation behavior still works.
-8. Add a later separate phase for admin-side file/photo management and manual signed-agreement upload/review/approval.
+3. In Supabase Auth Email Templates, verify the password-recovery template uses `{{ .ConfirmationURL }}` or correctly honors `{{ .RedirectTo }}`; custom templates can override redirect behavior even when the redirect URL is allowlisted.
+4. Deploy `admin-provision-account` from this branch only after the migration is applied and function code reviewed. Do not deploy `identifier-sign-in` as part of this email-only change unless separately required and tested.
+5. Use a dedicated test carrier with an email inbox under your control. Verify: no email at account creation; Send setup email delivers; recipient can open it on another browser/device; password can be set; sign-in works; resend is tracked; expired/old links fail safely.
+6. Confirm carrier cannot access other carrier records or restricted features before approval. Frontend visibility is not a security boundary.
+7. Test duplicate email, username, phone, and MC handling and confirm failed provisioning leaves no orphan Auth/profile/role records.
+8. Confirm driver invitation behavior still works.
+9. Add a later separate phase for admin-side file/photo management and manual signed-agreement upload/review/approval.
 
 ## Known gaps and cautions
 - Email request success means Auth accepted the request; it does not prove final inbox delivery.
