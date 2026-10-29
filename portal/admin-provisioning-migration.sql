@@ -16,7 +16,7 @@ alter table public.carrier_profiles
   add column if not exists onboarding_mode text not null default 'self_service'
     check (onboarding_mode in ('self_service','admin_assisted')),
   add column if not exists admin_setup_complete boolean not null default false,
-  add column if not exists setup_link_generated_at timestamptz;
+  add column if not exists setup_link_generated_at timestamptz,
   add column if not exists setup_link_sent_at timestamptz,
   add column if not exists setup_link_send_count integer not null default 0 check (setup_link_send_count >= 0);
 
