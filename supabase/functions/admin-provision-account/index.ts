@@ -1,6 +1,6 @@
 // Supabase Edge Function: admin-provision-account
 // Deploy with SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY set as function secrets.
-// Creates a carrier or driver profile, assigns the correct role/tenant, and returns a one-time password-setup link.
+// Creates carrier or driver profiles. Carrier setup emails are sent in a separate admin action.
 // Only an existing portal_admins administrator may call this function.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -43,11 +43,44 @@ Deno.serve(async (req) => {
 
   let input: Record<string, unknown>;
   try { input = await req.json(); } catch { return json({ error: "Invalid request body." }, 400); }
+  if (input.action === "send_setup_email" || input.action === "send_setup_link") {
+    const targetUserId = typeof input.target_user_id === "string" ? input.target_user_id : "";
+    if (!targetUserId) return json({ error: "Choose a carrier account first." }, 400);
+    const { data: profile, error: profileError } = await admin.from("carrier_profiles").select("user_id,business_name,setup_link_send_count").eq("user_id", targetUserId).maybeSingle();
+    if (profileError || !profile) return json({ error: "The selected carrier profile was not found." }, 404);
+    const { data: target, error: targetError } = await admin.auth.admin.getUserById(targetUserId);
+    if (targetError || !target.user?.email) return json({ error: "Could not find the carrier's authentication email." }, 404);
+    // Use Auth's own recovery-email delivery. Implicit flow is intentional here:
+    // the administrator initiates the send, but the carrier opens the email on a different device/browser,
+    // so a PKCE verifier stored in the administrator's browser would not be available to the carrier.
+    const mailer = createClient(supabaseUrl, anonKey, {
+      auth: { flowType: "implicit", autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
+    });
+    const { error: emailError } = await mailer.auth.resetPasswordForEmail(target.user.email, {
+      redirectTo: "https://www.tuckerstruckers.com/portal/index.html",
+    });
+    if (emailError) return json({ error: "Setup email could not be sent: " + emailError.message }, 502);
+
+    const sentAt = new Date().toISOString();
+    const { error: stampError } = await admin.from("carrier_profiles").update({
+      setup_link_sent_at: sentAt,
+      setup_link_send_count: (profile.setup_link_send_count || 0) + 1,
+    }).eq("user_id", targetUserId);
+    return json({
+      success: true,
+      email_requested: true,
+      tracking_warning: stampError ? "The email request was submitted, but the sent timestamp could not be saved: " + stampError.message : null,
+      account: { user_id: targetUserId, email: target.user.email, username: null, role: "carrier_admin" },
+      message: "Password setup email requested for " + (profile.business_name || "carrier") + ". The link is delivered by Supabase Auth and is not exposed in the administrator page.",
+    });
+  }
+
   const kind = input.kind === "driver" ? "driver" : input.kind === "carrier" ? "carrier" : "";
   const onboardingMode = input.onboarding_mode === "admin_assisted" ? "admin_assisted" : "self_service";
   const email = typeof input.email === "string" ? normalize(input.email) : "";
   const username = typeof input.username === "string" ? normalize(input.username) : "";
   const passwordSeed = crypto.randomUUID() + crypto.randomUUID();
+  const deferCarrierSetupLink = kind === "carrier";
   if (!kind) return json({ error: "Choose carrier or driver account type." }, 400);
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "A valid email is required for account recovery and setup links." }, 400);
   if (username && !/^[a-z0-9._-]{3,32}$/.test(username)) return json({ error: "Username must be 3–32 characters using letters, numbers, dots, underscores, or hyphens." }, 400);
@@ -134,18 +167,22 @@ Deno.serve(async (req) => {
     if (error) { await cleanup(); return json({ error: "Login identifiers could not be saved: " + error.message }, 400); }
   }
 
-  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: "recovery", email, options: { redirectTo: "https://www.tuckerstruckers.com/portal/index.html" },
-  });
-  if (linkError || !linkData.properties?.action_link) {
-    await cleanup();
-    return json({ error: "Account setup link could not be generated: " + (linkError?.message || "unknown error") }, 500);
+  let setupLink: string | null = null;
+  if (!deferCarrierSetupLink) {
+    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+      type: "recovery", email, options: { redirectTo: "https://www.tuckerstruckers.com/portal/index.html" },
+    });
+    if (linkError || !linkData.properties?.action_link) {
+      await cleanup();
+      return json({ error: "Account setup link could not be generated: " + (linkError?.message || "unknown error") }, 500);
+    }
+    setupLink = linkData.properties.action_link;
   }
 
   return json({
     success: true,
     account: { user_id: userId, email, username: username || null, role, carrier_user_id: kind === "driver" ? carrierUserId : null },
-    setup_link: linkData.properties.action_link,
-    message: "Account created and profile assigned. Copy the one-time setup link and send it securely to the user. The user will choose their own password.",
+    setup_link: setupLink,
+    message: deferCarrierSetupLink ? "Carrier account and profile saved. No setup link was generated." : "Account created and profile assigned. Copy the one-time setup link and send it securely to the user. The user will choose their own password.",
   });
 });

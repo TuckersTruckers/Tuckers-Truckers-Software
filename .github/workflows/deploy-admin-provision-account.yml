@@ -1,0 +1,37 @@
+name: Deploy admin provisioning function
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_production_deploy:
+        description: "Confirm replacing the live admin-provision-account Edge Function"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: inputs.confirm_production_deploy == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the selected branch
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy admin-provision-account
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: bvrlpwkzqmqfcupqjugf
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "::error::Add SUPABASE_ACCESS_TOKEN in GitHub repository Actions secrets before deploying."
+            exit 1
+          fi
+          supabase functions deploy admin-provision-account --project-ref "$SUPABASE_PROJECT_REF" --use-api
