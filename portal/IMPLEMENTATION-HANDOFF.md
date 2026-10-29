@@ -9,7 +9,7 @@ Latest implementation commits are recorded in PR #7; the branch is still draft a
 - Prior repo prohibition is superseded for implementation work by that explicit authorization.
 - This handoff records work and outstanding actions so a future ChatGPT session can resume accurately.
 - Supabase migration `admin_carrier_provisioning_and_setup_email_tracking` was applied successfully on 2026-10-29 and then verified against the live schema.
-- No Edge Function has been deployed, no PR has been merged, and no live Auth email-template settings have been changed by this implementation pass.
+- No Edge Function has been deployed, no PR has been merged, and no live Auth email-template settings have been changed by this implementation pass. A deployment attempt through the available integration was blocked by safety checks; no deployment success was reported.
 - Supabase AI data access was returned to **Schema Only** by the user. Preserve that lower-access setting.
 
 ## Current project
@@ -29,7 +29,7 @@ Latest implementation commits are recorded in PR #7; the branch is still draft a
 - No duplicate normalized carrier MC values were found at the time of the check.
 - Deployed `admin-provision-account` was still version 1, with the older generate-link-and-return flow; it has NOT been deployed from the feature branch.
 - Deployed `identifier-sign-in` remains version 2 with `verify_jwt=false`; it was not changed.
-- The Supabase connector does not expose Auth email-template settings in the available tools. The recovery template is therefore still unverified.
+- User inspected and pasted the live Reset Password template: it uses `<a href="{{ .ConfirmationURL }}">Reset password</a>`. This confirms the template uses the expected confirmation URL variable, but does not prove the redirect, recovery session, or password update works end-to-end.
 - Existing carrier profile count at the schema check was 1; do not modify existing real accounts during testing.
 
 ## Workflow requirements
@@ -59,13 +59,12 @@ The previous PR generated a recovery link with `admin.auth.admin.generateLink()`
 - These checks do not establish browser functionality, email delivery, successful password reset, role isolation, or production readiness.
 
 ## Required next steps before live use
-1. In Supabase Dashboard, open Authentication → Email Templates → Reset Password (labels may vary) and verify the link uses `{{ .ConfirmationURL }}` or correctly honors `{{ .RedirectTo }}`. Custom templates can override redirect behavior even when the redirect URL is allowlisted.
-2. Once the recovery template is verified, deploy `admin-provision-account` from the reviewed feature branch. Do not deploy `identifier-sign-in` as part of this email-only change unless separately required and tested.
-3. Use a dedicated test carrier with an inbox under your control. Verify: no email at account creation; Send setup email delivers; recipient can open it on another browser/device; password can be set; sign-in works; resend is tracked; expired/old links fail safely.
-4. Confirm carrier cannot access other carrier records or restricted features before approval. Frontend visibility is not a security boundary.
-5. Test duplicate email, username, phone, and MC handling and confirm failed provisioning leaves no orphan Auth/profile/role records.
-6. Confirm driver setup-link behavior still works.
-7. Add a later separate phase for admin-side file/photo management and manual signed-agreement upload/review/approval.
+1. Deploy `admin-provision-account` from the reviewed feature branch using an approved deployment path. The integration deployment attempt was blocked; no deployment occurred. Do not deploy `identifier-sign-in` as part of this email-only change unless separately required and tested.
+2. Use a dedicated test carrier with an inbox under your control. Verify: no email at account creation; Send setup email delivers; recipient can open it on another browser/device; password can be set; sign-in works; resend is tracked; expired/old links fail safely.
+3. Confirm carrier cannot access other carrier records or restricted features before approval. Frontend visibility is not a security boundary.
+4. Test duplicate email, username, phone, and MC handling and confirm failed provisioning leaves no orphan Auth/profile/role records.
+5. Confirm driver setup-link behavior still works.
+6. Add a later separate phase for admin-side file/photo management and manual signed-agreement upload/review/approval.
 
 ## Known gaps and cautions
 - Email request success means Auth accepted the request; it does not prove final inbox delivery.
