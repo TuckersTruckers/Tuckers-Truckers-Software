@@ -1,6 +1,6 @@
 // Supabase Edge Function: admin-provision-account
 // Deploy with SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY set as function secrets.
-// Creates carrier or driver profiles. Carrier setup links are generated in a separate admin action.
+// Creates carrier or driver profiles. Carrier setup emails are sent in a separate admin action.
 // Only an existing portal_admins administrator may call this function.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
