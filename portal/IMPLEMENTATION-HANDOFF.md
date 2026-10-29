@@ -9,7 +9,7 @@ Latest implementation commits are recorded in PR #7; the branch is still draft a
 - Prior repo prohibition is superseded for implementation work by that explicit authorization.
 - This handoff records work and outstanding actions so a future ChatGPT session can resume accurately.
 - Supabase migration `admin_carrier_provisioning_and_setup_email_tracking` was applied successfully on 2026-10-29 and then verified against the live schema.
-- No Edge Function has been deployed, no PR has been merged, and no live Auth email-template settings have been changed by this implementation pass. A deployment attempt through the available integration was blocked by safety checks; no deployment success was reported.
+- No Edge Function has been deployed, no PR has been merged, and no live Auth email-template settings have been changed by this implementation pass. A deployment attempt through the available integration was blocked by safety checks; no deployment success was reported. Added a guarded manual GitHub Actions workflow at `.github/workflows/deploy-admin-provision-account.yml` so deployment can use the Supabase CLI through an approved path after `SUPABASE_ACCESS_TOKEN` is configured as a GitHub Actions secret. It requires an explicit `confirm_production_deploy=true` input and deploys only `admin-provision-account`.
 - Supabase AI data access was returned to **Schema Only** by the user. Preserve that lower-access setting.
 
 ## Current project
@@ -59,7 +59,7 @@ The previous PR generated a recovery link with `admin.auth.admin.generateLink()`
 - These checks do not establish browser functionality, email delivery, successful password reset, role isolation, or production readiness.
 
 ## Required next steps before live use
-1. Deploy `admin-provision-account` from the reviewed feature branch using an approved deployment path. The integration deployment attempt was blocked; no deployment occurred. Do not deploy `identifier-sign-in` as part of this email-only change unless separately required and tested.
+1. Add GitHub repository Actions secret `SUPABASE_ACCESS_TOKEN` using a Supabase personal access token. After PR #7 is merged, open Actions → Deploy admin provisioning function, run it on `main`, and set `confirm_production_deploy=true`. This deploys only `admin-provision-account`. The workflow file is now prepared on the feature branch; the feature branch PR must be merged before the workflow is available from `main`. Do not deploy `identifier-sign-in` as part of this email-only change unless separately required and tested.
 2. Use a dedicated test carrier with an inbox under your control. Verify: no email at account creation; Send setup email delivers; recipient can open it on another browser/device; password can be set; sign-in works; resend is tracked; expired/old links fail safely.
 3. Confirm carrier cannot access other carrier records or restricted features before approval. Frontend visibility is not a security boundary.
 4. Test duplicate email, username, phone, and MC handling and confirm failed provisioning leaves no orphan Auth/profile/role records.
