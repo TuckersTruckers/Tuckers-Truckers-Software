@@ -2,6 +2,8 @@
 
 Updated: 2026-10-29
 
+Latest implementation commits are recorded in PR #7; the branch is still draft and unmerged.
+
 ## Authorization and guardrails
 - Tucker explicitly authorized implementation work in the repository to get the portal working.
 - Prior repo prohibition is superseded for implementation work by that explicit authorization.
@@ -29,7 +31,7 @@ Updated: 2026-10-29
 ## Implementation review finding
 The previous PR generated a recovery link with `admin.auth.admin.generateLink()` and returned the token-bearing URL to the administrator for manual copying. That method does not send an email. Supabase's documented `resetPasswordForEmail()` sends the email through Auth. Because the administrator triggers the send but the carrier opens the email in another browser/device, the Edge Function must request an **implicit-flow** recovery email so the recipient does not need the administrator browser's PKCE verifier. The portal already detects `type=recovery` in the URL hash and has a password setup form using `auth.updateUser({ password })`; this path must still be validated end-to-end with a test account.
 
-## Changes intended in this PR update
+## Changes implemented on the PR branch
 - Replace the carrier's manual copy-link action with a Send/Resend setup email action.
 - Use a separate short-lived Auth client configured with implicit flow to request the recovery email through Supabase Auth.
 - Track `setup_link_sent_at` and `setup_link_send_count` in `carrier_profiles`.
