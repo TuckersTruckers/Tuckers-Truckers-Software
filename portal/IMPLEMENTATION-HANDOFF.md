@@ -43,7 +43,8 @@ The previous PR generated a recovery link with `admin.auth.admin.generateLink()`
 - Confirmed the migration column list is syntactically joined in one `ALTER TABLE` statement and the new send-tracking columns are included.
 - Confirmed the Edge Function uses a separate implicit-flow Auth client for the recovery email request, returns an email-request status rather than a token-bearing link, and tracks send timestamp/count.
 - Confirmed the admin UI uses the new request status and keeps driver setup-link behavior in place.
-- These were source-level consistency checks only; no compiler, browser, email delivery, or live database test has been run.
+- Added `.github/workflows/portal-static-checks.yml` to run Deno type-checking for the provisioning function and Node syntax checks for inline JavaScript in the portal admin/login pages on feature-branch pushes and PRs.
+- These were source-level consistency checks only; the new GitHub Actions workflow has been committed but no run result is available yet. No compiler result, browser, email delivery, or live database test has been confirmed.
 
 ## Required next steps before live use
 1. Run TypeScript/browser-JavaScript syntax checks and inspect the full PR diff.
