@@ -8,7 +8,8 @@ Latest implementation commits are recorded in PR #7; the branch is still draft a
 - Tucker explicitly authorized implementation work in the repository to get the portal working.
 - Prior repo prohibition is superseded for implementation work by that explicit authorization.
 - This handoff records work and outstanding actions so a future ChatGPT session can resume accurately.
-- No Supabase migration has been applied, no Edge Function has been deployed, no PR has been merged, and no live settings have been changed by this implementation pass.
+- Supabase migration `admin_carrier_provisioning_and_setup_email_tracking` was applied successfully on 2026-10-29 and then verified against the live schema.
+- No Edge Function has been deployed, no PR has been merged, and no live Auth email-template settings have been changed by this implementation pass.
 - Supabase AI data access was returned to **Schema Only** by the user. Preserve that lower-access setting.
 
 ## Current project
@@ -16,9 +17,20 @@ Latest implementation commits are recorded in PR #7; the branch is still draft a
 - Existing PR #7: https://github.com/TuckersTruckers/Tuckers-Truckers-Website/pull/7
 - Working branch: `feature/separate-carrier-setup-link`
 - Supabase project ref: `bvrlpwkzqmqfcupqjugf`
-- Portal redirect allowed: `https://www.tuckerstruckers.com/portal/index.html`
+- Portal redirect allowlisted: `https://www.tuckerstruckers.com/portal/index.html`
 - User confirmed custom SMTP is configured.
 - No secrets should be copied into GitHub, files, or chat.
+
+## Live Supabase audit on 2026-10-29
+- Project is ACTIVE_HEALTHY in `us-east-2`.
+- Live `carrier_profiles` has the columns `setup_link_generated_at`, `setup_link_sent_at`, and `setup_link_send_count`; send count defaults to zero and has a nonnegative check.
+- Applied migration recorded as version `20261029201434`, name `admin_carrier_provisioning_and_setup_email_tracking`.
+- Unique carrier MC and username indexes, driver username index, private `portal_login_identifiers` table restrictions, and carrier-driver RLS policies were checked after migration.
+- No duplicate normalized carrier MC values were found at the time of the check.
+- Deployed `admin-provision-account` was still version 1, with the older generate-link-and-return flow; it has NOT been deployed from the feature branch.
+- Deployed `identifier-sign-in` remains version 2 with `verify_jwt=false`; it was not changed.
+- The Supabase connector does not expose Auth email-template settings in the available tools. The recovery template is therefore still unverified.
+- Existing carrier profile count at the schema check was 1; do not modify existing real accounts during testing.
 
 ## Workflow requirements
 1. Admin can pre-create a carrier account/profile and edit/review data before sending an invitation.
@@ -29,7 +41,7 @@ Latest implementation commits are recorded in PR #7; the branch is still draft a
 6. No automatic approval should be inferred from profile creation or email delivery.
 
 ## Implementation review finding
-The previous PR generated a recovery link with `admin.auth.admin.generateLink()` and returned the token-bearing URL to the administrator for manual copying. That method does not send an email. Supabase's documented `resetPasswordForEmail()` sends the email through Auth. Because the administrator triggers the send but the carrier opens the email in another browser/device, the Edge Function must request an **implicit-flow** recovery email so the recipient does not need the administrator browser's PKCE verifier. The portal already detects `type=recovery` in the URL hash and has a password setup form using `auth.updateUser({ password })`; this path must still be validated end-to-end with a test account.
+The previous PR generated a recovery link with `admin.auth.admin.generateLink()` and returned the token-bearing URL to the administrator for manual copying. That method does not send an email. Supabase's documented `resetPasswordForEmail()` sends the email through Auth. Because the administrator triggers the send but the carrier opens the email in another browser/device, the Edge Function uses a separate Auth client configured for implicit flow so the recipient does not need the administrator browser's PKCE verifier. The portal detects `type=recovery` in the URL hash and has a password setup form using `auth.updateUser({ password })`; this path still needs end-to-end testing with a test account.
 
 ## Changes implemented on the PR branch
 - Replace the carrier's manual copy-link action with a Send/Resend setup email action.
@@ -39,27 +51,25 @@ The previous PR generated a recovery link with `admin.auth.admin.generateLink()`
 - Keep driver setup-link behavior unchanged.
 - Do not log or display recovery tokens.
 
-## Validation performed in this implementation pass
-- Confirmed the migration column list is syntactically joined in one `ALTER TABLE` statement and the new send-tracking columns are included.
-- Confirmed the Edge Function uses a separate implicit-flow Auth client for the recovery email request, returns an email-request status rather than a token-bearing link, and tracks send timestamp/count.
-- Confirmed the admin UI uses the new request status and keeps driver setup-link behavior in place.
-- Added `.github/workflows/portal-static-checks.yml` to run Deno type-checking for the provisioning function and Node syntax checks for inline JavaScript in the portal admin/login pages on feature-branch pushes and PRs.
-- These were source-level consistency checks only; the new GitHub Actions workflow has been committed but no run result is available yet. No compiler result, browser, email delivery, or live database test has been confirmed.
+## Validation performed
+- GitHub Actions workflow run `40934904430` (Portal static checks) completed successfully for PR head `55434ff060805c32766579774f404ae39d294908` on 2026-10-29.
+- Its `syntax` job passed Deno type-checking of `admin-provision-account/index.ts` and Node syntax checks for inline JavaScript in `portal/admin.html` and `portal/index.html`.
+- Applied the Supabase migration and re-read live tables/migration history to verify the new columns and migration record.
+- Inspected the currently deployed function source and confirmed it is still the older version.
+- These checks do not establish browser functionality, email delivery, successful password reset, role isolation, or production readiness.
 
 ## Required next steps before live use
-1. Run TypeScript/browser-JavaScript syntax checks and inspect the full PR diff.
-2. Apply `portal/admin-provisioning-migration.sql` only after confirming the target schema and migration are correct.
-3. In Supabase Auth Email Templates, verify the password-recovery template uses `{{ .ConfirmationURL }}` or correctly honors `{{ .RedirectTo }}`; custom templates can override redirect behavior even when the redirect URL is allowlisted.
-4. Deploy `admin-provision-account` from this branch only after the migration is applied and function code reviewed. Do not deploy `identifier-sign-in` as part of this email-only change unless separately required and tested.
-5. Use a dedicated test carrier with an email inbox under your control. Verify: no email at account creation; Send setup email delivers; recipient can open it on another browser/device; password can be set; sign-in works; resend is tracked; expired/old links fail safely.
-6. Confirm carrier cannot access other carrier records or restricted features before approval. Frontend visibility is not a security boundary.
-7. Test duplicate email, username, phone, and MC handling and confirm failed provisioning leaves no orphan Auth/profile/role records.
-8. Confirm driver invitation behavior still works.
-9. Add a later separate phase for admin-side file/photo management and manual signed-agreement upload/review/approval.
+1. In Supabase Dashboard, open Authentication → Email Templates → Reset Password (labels may vary) and verify the link uses `{{ .ConfirmationURL }}` or correctly honors `{{ .RedirectTo }}`. Custom templates can override redirect behavior even when the redirect URL is allowlisted.
+2. Once the recovery template is verified, deploy `admin-provision-account` from the reviewed feature branch. Do not deploy `identifier-sign-in` as part of this email-only change unless separately required and tested.
+3. Use a dedicated test carrier with an inbox under your control. Verify: no email at account creation; Send setup email delivers; recipient can open it on another browser/device; password can be set; sign-in works; resend is tracked; expired/old links fail safely.
+4. Confirm carrier cannot access other carrier records or restricted features before approval. Frontend visibility is not a security boundary.
+5. Test duplicate email, username, phone, and MC handling and confirm failed provisioning leaves no orphan Auth/profile/role records.
+6. Confirm driver setup-link behavior still works.
+7. Add a later separate phase for admin-side file/photo management and manual signed-agreement upload/review/approval.
 
 ## Known gaps and cautions
 - Email request success means Auth accepted the request; it does not prove final inbox delivery.
-- The new timestamp/count fields require the migration before the updated function can run.
+- The migration is applied, but the new Edge Function is not deployed.
 - Current create-account form is carrier/driver-oriented, not a universal role-management interface.
 - Current admin page does not provide full carrier-document/photo management.
-- No live tests have been performed in this pass.
+- No end-to-end browser or email-delivery tests have been performed.
