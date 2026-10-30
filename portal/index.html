@@ -293,7 +293,7 @@
       const { error } = await supabase.auth.updateUser({ password });
       if (error) return showNotice(error.message, 'error');
       history.replaceState(null, '', window.location.pathname);
-      window.location.href = 'dashboard.html';
+      await routePortalUser();
     });
 
     loginForm.addEventListener('submit', async (event) => {
@@ -319,7 +319,7 @@
       submitButton.disabled = false;
       submitButton.innerHTML = 'Sign in <span>→</span>';
       if (signInError) return showNotice('Sign-in failed. Check your details, or use Forgot password with your account email address.', 'error');
-      window.location.href = 'dashboard.html';
+      await routePortalUser();
     });
 
     $('profile-form').addEventListener('submit', async (event) => {
@@ -410,11 +410,26 @@
       showNotice('You have been signed out.', 'success');
     });
 
+
+    async function routePortalUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { window.location.href = 'index.html'; return; }
+      const { data: isAdmin } = await supabase.rpc('is_portal_admin');
+      if (isAdmin === true) { window.location.href = 'admin.html'; return; }
+      const { data: roleRow } = await supabase.from('portal_user_roles').select('role').eq('user_id', user.id).maybeSingle();
+      if (['carrier','carrier_admin'].includes(roleRow?.role)) {
+        const { data: onboarding } = await supabase.from('carrier_onboarding').select('review_status').eq('user_id', user.id).maybeSingle();
+        window.location.href = onboarding?.review_status === 'approved' ? 'dashboard.html' : 'carrier-onboarding.html';
+        return;
+      }
+      window.location.href = 'dashboard.html';
+    }
+
     const { data: { session } } = await supabase.auth.getSession();
     if (session && !passwordForm.hidden) {
       // Keep password setup visible when arriving through an invitation or recovery link.
     } else if (session) {
-      window.location.href = 'dashboard.html';
+      await routePortalUser();
     }
   </script>
 </body>
