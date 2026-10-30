@@ -44,3 +44,6 @@
 .locked-note b{font-size:12px}
 .locked-note p{font-size:12px;color:#777;margin:4px 0 0;line-height:1.6}
 @media(max-width:760px){.login-card:has(#signed-in-panel:not([hidden])){padding:23px}.portal-shell:has(#signed-in-panel:not([hidden])){padding-top:28px}.dashboard-heading h3{font-size:25px}.progress-strip{gap:5px}.progress-step{gap:6px;font-size:10px}.progress-step span{width:24px;height:24px}.profile-form .field-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.check-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.section-heading h4{font-size:17px}.secondary-button.compact{min-width:78px;padding:9px}.dashboard-heading{gap:12px}}
+
+/* Official logo replaces the initials tile on sign-in and password setup. */
+.card-mark{display:block;width:116px;height:82px;object-fit:contain;object-position:left center;margin:0 0 20px;border-radius:0;background:transparent;padding:0}
