@@ -293,7 +293,7 @@
       const { error } = await supabase.auth.updateUser({ password });
       if (error) return showNotice(error.message, 'error');
       history.replaceState(null, '', window.location.pathname);
-      window.location.href = 'dashboard.html';
+      window.location.href = 'workspace.html';
     });
 
     loginForm.addEventListener('submit', async (event) => {
