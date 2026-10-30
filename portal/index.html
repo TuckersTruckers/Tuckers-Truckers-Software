@@ -422,7 +422,7 @@
         window.location.href = onboarding?.review_status === 'approved' ? 'dashboard.html' : 'carrier-onboarding.html';
         return;
       }
-      await routePortalUser();
+      window.location.href = 'dashboard.html';
     }
 
     const { data: { session } } = await supabase.auth.getSession();
