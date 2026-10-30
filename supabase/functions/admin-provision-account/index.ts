@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
   try { input = await req.json(); } catch { return json({ error: "Invalid request body." }, 400); }
   if (input.action === "send_setup_packet") {
     const email = typeof input.email === "string" ? normalize(input.email) : "";
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ error: "Enter a valid carrier email address." }, 400);
+   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Enter a valid carrier email address." }, 400);
     // Prepare the carrier_admin role using the caller's authenticated session. The auth.users
     // insert performed by inviteUserByEmail then consumes this prepared invite via the DB trigger.
     const { error: invitePrepError } = await caller.rpc("prepare_portal_invite", {
