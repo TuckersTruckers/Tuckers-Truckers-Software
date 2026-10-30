@@ -9,11 +9,11 @@
 </style>
 </head>
 <body>
-<header><a class="brand" href="../index.html"><img src="../assets/tuckers-truckers-logo.svg" alt=""><span>TUCKER'S TRUCKERS<small>PLATFORM ADMINISTRATION</small></span></a><button id="signout" class="btn secondary">Sign out</button></header>
+<header><a class="brand" href="dashboard.html" aria-label="Return to your portal dashboard"><img src="../assets/tuckers-truckers-logo.svg" alt=""><span>TUCKER'S TRUCKERS<small>PLATFORM ADMINISTRATION</small></span></a><button id="signout" class="btn secondary">Sign out</button></header>
 <main class="wrap">
 <section class="hero"><p class="eyebrow">PLATFORM OWNER · PRIVATE</p><h1>Carrier & Driver Administration</h1><p>Create the company and driver profiles yourself, assign every driver to the right carrier, and send a password setup email when the records are ready. Users choose their own password through the email link.</p></section>
 <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
-<section class="card" id="carrier-directory"><h2>Existing carriers</h2><p class="sub">Review the carrier accounts already on file. Add drivers from the account tools below.</p><div id="carrier-directory-list"><p class="sub">Loading carrier records…</p></div></section>
+<section class="card" id="carrier-directory"><h2>Carriers</h2><p class="sub">Review the carrier accounts already on file. Add drivers from the account tools below.</p><div id="carrier-directory-list"><p class="sub">Loading carrier records…</p></div></section>
 <section class="card" id="dispatcher-assignment-section" hidden><h2>Dispatcher access assignments</h2><p class="sub">Assign a dispatcher to the carrier companies they are allowed to manage. A dispatcher can see only the carriers assigned here.</p>
 <form id="assignment-form"><div class="fields"><div class="field"><label for="dispatcher-email">Dispatcher account email *</label><input id="dispatcher-email" type="email" required autocomplete="email" placeholder="dispatcher@company.com"></div><div class="field"><label for="assignment-carrier-select">Carrier company *</label><select id="assignment-carrier-select" required><option value="">Select carrier</option></select></div></div><div class="actions"><button class="btn primary" type="submit" id="assign-button">Assign carrier access</button><button class="btn secondary" type="button" id="refresh-assignments">Refresh assignments</button></div></form>
 <div id="assignment-list" style="margin-top:16px"><p class="sub">Loading current assignments…</p></div></section>
