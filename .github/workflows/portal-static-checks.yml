@@ -2,7 +2,7 @@ name: Portal static checks
 
 on:
   push:
-    branches: [feature/separate-carrier-setup-link]
+    branches: [feature/separate-carrier-setup-link, feature/carrier-directory-and-portal-logo-navigation]
     paths:
       - "portal/**"
       - "supabase/functions/admin-provision-account/**"
@@ -44,7 +44,7 @@ jobs:
           from pathlib import Path
           import re
 
-          targets = [Path("portal/admin.html"), Path("portal/index.html")]
+          targets = sorted(Path("portal").glob("*.html"))
           output = Path("/tmp/portal-script-checks")
           output.mkdir(parents=True, exist_ok=True)
           count = 0
