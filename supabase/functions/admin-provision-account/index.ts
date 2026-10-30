@@ -43,6 +43,33 @@ Deno.serve(async (req) => {
 
   let input: Record<string, unknown>;
   try { input = await req.json(); } catch { return json({ error: "Invalid request body." }, 400); }
+  if (input.action === "send_setup_packet") {
+    const email = typeof input.email === "string" ? normalize(input.email) : "";
+    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ error: "Enter a valid carrier email address." }, 400);
+    // Prepare the carrier_admin role using the caller's authenticated session. The auth.users
+    // insert performed by inviteUserByEmail then consumes this prepared invite via the DB trigger.
+    const { error: invitePrepError } = await caller.rpc("prepare_portal_invite", {
+      invite_email: email,
+      invite_role: "carrier_admin",
+    });
+    if (invitePrepError) return json({ error: "Carrier invitation could not be prepared: " + invitePrepError.message }, 400);
+    const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: "https://www.tuckerstruckers.com/portal/index.html",
+      data: { portal_invited: true, portal_role: "carrier_admin" },
+    });
+    if (inviteError || !invited.user) {
+      await admin.from("portal_invites").update({ status: "cancelled" }).eq("email", email).eq("status", "prepared");
+      return json({ error: "Setup packet could not be sent: " + (inviteError?.message || "Invitation was not created.") }, 502);
+    }
+    return json({
+      success: true,
+      packet_sent: true,
+      email_requested: true,
+      account: { user_id: invited.user.id, email, username: null, role: "carrier_admin" },
+      message: "Carrier setup invitation sent. The carrier can create a password and complete their business profile.",
+    });
+  }
+
   if (input.action === "send_setup_email" || input.action === "send_setup_link") {
     const targetUserId = typeof input.target_user_id === "string" ? input.target_user_id : "";
     if (!targetUserId) return json({ error: "Choose a carrier account first." }, 400);
@@ -129,6 +156,9 @@ Deno.serve(async (req) => {
       fmcsa_email: typeof input.fmcsa_email === "string" && input.fmcsa_email.trim() ? input.fmcsa_email.trim() : email,
       fmcsa_address: typeof input.fmcsa_address === "string" ? input.fmcsa_address.trim() : "",
       dba_name: typeof input.dba_name === "string" ? input.dba_name.trim() : "",
+      same_address_as_fmcsa: input.same_address_as_fmcsa === true,
+      same_phone_as_fmcsa: input.same_phone_as_fmcsa === true,
+      same_email_as_fmcsa: input.same_email_as_fmcsa === true,
       personal_address: typeof input.personal_address === "string" ? input.personal_address.trim() : "",
       personal_phone: typeof input.personal_phone === "string" ? input.personal_phone.trim() : phone,
       personal_email: typeof input.personal_email === "string" && input.personal_email.trim() ? input.personal_email.trim() : email,
